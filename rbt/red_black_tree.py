@@ -230,3 +230,76 @@ class RedBlackTree:
         while node.left != self.NIL:
             node = node.left
         return node
+
+    def height(self, node=None):
+        """Calculate the height of the tree or subtree"""
+        if node is None:
+            node = self.root
+        if node == self.NIL:
+            return 0
+        return 1 + max(self.height(node.left), self.height(node.right))
+
+    def black_height(self, node=None):
+        """Calculate the black height of the tree or subtree"""
+        if node is None:
+            node = self.root
+        if node == self.NIL:
+            return 1  # NIL nodes are BLACK
+        
+        left_height = self.black_height(node.left)
+        right_height = self.black_height(node.right)
+        
+        # Verify that black heights match for a valid RB tree
+        if left_height != right_height:
+            print(f"Warning: Black height mismatch at node {node.key}")
+        
+        # Add 1 if this node is BLACK
+        return left_height + (1 if node.color == Node.BLACK else 0)
+
+    def validate(self):
+        """Validate that the tree follows Red-Black properties"""
+        if self.root == self.NIL:
+            return True
+        
+        # Property 1: Every node is either red or black
+        # (enforced by Node.RED and Node.BLACK constants)
+        
+        # Property 2: The root is black
+        if self.root.color != Node.BLACK:
+            print("Violation: Root is not black")
+            return False
+        
+        # Check other properties with helper function
+        return self._validate_node(self.root)
+
+    def _validate_node(self, node):
+        if node == self.NIL:
+            return True
+        
+        # Property 3: Every NIL (leaf) is black
+        # (enforced by NIL initialization)
+        
+        # Property 4: If a node is red, both its children are black
+        if node.color == Node.RED:
+            if node.left.color != Node.BLACK or node.right.color != Node.BLACK:
+                print(f"Violation: Red node {node.key} has red child")
+                return False
+        
+        # Property 5: For each node, all paths to descendants have the same black height
+        left_black_height = self._count_black_height(node.left)
+        right_black_height = self._count_black_height(node.right)
+        if left_black_height != right_black_height:
+            print(f"Violation: Black height mismatch at node {node.key}")
+            return False
+        
+        # Recursively check children
+        return self._validate_node(node.left) and self._validate_node(node.right)
+
+    def _count_black_height(self, node):
+        """Count black nodes from this node to a leaf"""
+        if node == self.NIL:
+            return 1  # NIL nodes are BLACK
+        
+        # Get the child with the minimum height
+        height = min(self._count_black_height(node.left), self._count_black_height(node.right))
+        return height + (1 if node.color == Node.BLACK else 0)
