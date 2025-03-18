@@ -125,10 +125,8 @@ def test_validate():
         black_height = rbt.black_height()
         print(f"Black height: {black_height}")
         
-        # Allow for a margin on either side
-        min_expected = import_math().floor(len(data) / 2 + 1 - 1.5)
-        max_expected = import_math().ceil(len(data) / 2 + 1 + 1.5)
-        # Expected black height is approximately log2(n)
+        min_expected = import_math().floor(log2n / 2 - 1.5)
+        max_expected = import_math().ceil(log2n / 2 + 2.5)
         assert black_height >= min_expected
         assert black_height <= max_expected
         
@@ -142,12 +140,10 @@ def test_validate():
         
         return rbt
 
-    # Helper function for log2 (to make code more readable)
     def import_math():
         import math
         return math
 
-    # Run tests
     test_rbt(test_data_1, "Small Tree (10 random elements)")
     test_rbt(test_data_2, "Medium Tree (20 ascending elements)")
     test_rbt(test_data_3, "Medium Tree (20 random elements)")
