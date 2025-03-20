@@ -1,4 +1,3 @@
-import pytest
 import random
 from rbt.red_black_tree import RedBlackTree
 

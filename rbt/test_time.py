@@ -4,63 +4,74 @@ import random
 import io
 import matplotlib.pyplot as plt
 from pstats import SortKey
+
 from rbt.red_black_tree import RedBlackTree
 
-def profile_rbt_insert(size):
+def create_tree(nums):
     rbt = RedBlackTree()
-    data = random.sample(range(1, size * 10), size)
-    sample = random.sample(data, size)
-    random.shuffle(sample)
 
-    pr = cProfile.Profile()
-    pr.enable()
-    
-    for num in sample:
+    for num in nums:
         rbt.insert(num)
-    
-    pr.disable()
-    
+
+    return rbt
+
+def get_profile_time(pr):
     s = io.StringIO()
     ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
     ps.print_stats()
     
     stats_str = s.getvalue()
+    print(stats_str)
     time_line = [line for line in stats_str.split('\n') if 'function calls' in line][0]
     total_time = float(time_line.split('in')[1].split('seconds')[0].strip())
-    
+
     return total_time
+
+
+def profile_rbt_insert(size):
+    data = random.sample(range(1, size * 10), size)
+    sample = random.sample(data, size)
+
+    rbt = create_tree(sample)
+
+    #times = []
+    n_tests = 1000
+    pr = cProfile.Profile()
+    pr.enable()
+    for _ in range(0, n_tests):
+        rbt.insert(random.randint(1, size * 10))
+    pr.disable()
+    #times.append(get_profile_time(pr))
+    
+    return get_profile_time(pr) / n_tests
 
 def profile_rbt_find(size):
-    rbt = RedBlackTree()
     data = random.sample(range(1, size * 10), size)
     sample = random.sample(data, size)
-    random.shuffle(sample)
 
-    for num in sample:
-        rbt.insert(num)
-
-    random.shuffle(sample)
-    
+    rbt = create_tree(sample)
+    n_tests = 1000
+    # rbt.find(random.choice(sample))
+    # rbt.find(random.randint(1, size * 10))
+    times = []
     pr = cProfile.Profile()
     pr.enable()
-    
-    for num in sample:
-        rbt.find(num)
-    
+    for _ in range(0, n_tests):
+        rbt.find(random.choice(sample))
     pr.disable()
-    
-    s = io.StringIO()
-    ps = pstats.Stats(pr, stream=s).sort_stats(SortKey.CUMULATIVE)
-    ps.print_stats()
-    
-    stats_str = s.getvalue()
-    time_line = [line for line in stats_str.split('\n') if 'function calls' in line][0]
-    total_time = float(time_line.split('in')[1].split('seconds')[0].strip())
-    
-    return total_time
+    times.append(get_profile_time(pr) / n_tests)
+
+    pr = cProfile.Profile()
+    pr.enable()
+    for _ in range(0, n_tests):
+        rbt.find(random.randint(1, size * 10))
+    pr.disable()
+    times.append(get_profile_time(pr) / n_tests)
+
+    return sum(times) / len(times)
 
 def test_insert_time():
-    sizes = [1000000 * i for i in range(1, 10)]
+    sizes = [100000 * i for i in range(1, 10)]
     times = []
 
     for size in sizes:
@@ -84,7 +95,7 @@ def test_insert_time():
 
 
 def test_find_time():
-    sizes = [1000000 * i for i in range(1, 10)]
+    sizes = [100000 * i for i in range(1, 10)]
     times = []
 
     for size in sizes:
